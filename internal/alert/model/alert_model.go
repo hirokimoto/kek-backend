@@ -12,7 +12,7 @@ type Alert struct {
 	Body           string    `gorm:"column:body"`
 	PairAddress    string    `gorm:"column:pair_address"`
 	AlertType      string    `gorm:"column:alert_type"`
-	AlertValue     float64   `gorm:"column:alert_value"`
+	AlertValue     string    `gorm:"column:alert_value"`
 	AlertOption    string    `gorm:"column:alert_option"`
 	ExpirationTime time.Time `gorm:"column:expiration_time"`
 	AlertActions   []string  `gorm:"column:alert_actions"`

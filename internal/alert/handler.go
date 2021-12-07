@@ -37,7 +37,7 @@ func (h *Handler) saveAlert(c *gin.Context) {
 				Body           string    `json:"body" binding:"required"`
 				PairAddress    string    `json:"pairAddress" binding:"required,min=20"`
 				AlertType      string    `json:"alertType" binding:"required,min=3"`
-				AlertValue     float64   `json:"alertValue" binding:"required"`
+				AlertValue     string    `json:"alertValue" binding:"required"`
 				AlertOption    string    `json:"alertOption" binding:"required"`
 				ExpirationTime time.Time `json:"expirationTime" binding:"required"`
 				AlertActions   []string  `json:"alertActions" binding:"required"`
