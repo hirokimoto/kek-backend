@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"kek-backend/internal/account"
 	accountDB "kek-backend/internal/account/database"
+	"kek-backend/internal/alert"
+	alertDB "kek-backend/internal/alert/database"
 	"kek-backend/internal/article"
 	articleDB "kek-backend/internal/article/database"
 	"kek-backend/internal/config"
@@ -86,12 +88,16 @@ func runApplication() {
 			// setup article packages
 			articleDB.NewArticleDB,
 			article.NewHandler,
+			// setup alert packages
+			alertDB.NewAlertDB,
+			alert.NewHandler,
 			// server
 			newServer,
 		),
 		fx.Invoke(
 			account.RouteV1,
 			article.RouteV1,
+			alert.RouteV1,
 			printAppInfo,
 		),
 	)
