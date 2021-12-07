@@ -40,3 +40,6 @@ lint:
 # 	docker run --rm -v migrations:/migrations --network host migrate/migrate -path ./migrations \
 # 	-database "host=localhost user=root password=password dbname=kek port=9920 sslmode=disable TimeZone=Asia/Tokyo" up 2
 
+
+
+# migrate create -ext sql -seq -dir ./migrations users
