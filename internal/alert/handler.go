@@ -33,9 +33,8 @@ func (h *Handler) saveAlert(c *gin.Context) {
 		// bind
 		type RequestBody struct {
 			Alert struct {
-				Title string   `json:"title" binding:"required,min=5"`
-				Body  string   `json:"body" binding:"required"`
-				Tags  []string `json:"tagList" binding:"omitempty,dive,max=10"`
+				Title string `json:"title" binding:"required,min=5"`
+				Body  string `json:"body" binding:"required"`
 			} `json:"alert"`
 		}
 		var body RequestBody
@@ -50,17 +49,12 @@ func (h *Handler) saveAlert(c *gin.Context) {
 
 		// save alert
 		currentUser := account.MustCurrentUser(c)
-		var tags []*model.Tag
-		for _, tag := range body.Alert.Tags {
-			tags = append(tags, &model.Tag{Name: tag})
-		}
 		alert := model.Alert{
 			Slug:     slug.Make(body.Alert.Title),
 			Title:    body.Alert.Title,
 			Body:     body.Alert.Body,
 			Author:   *currentUser,
 			AuthorID: currentUser.ID,
-			Tags:     tags,
 		}
 		err := h.alertDB.SaveAlert(c.Request.Context(), &alert)
 		if err != nil {
@@ -132,7 +126,6 @@ func (h *Handler) alerts(c *gin.Context) {
 			offset = 0
 		}
 		criteria := alertDB.IterateAlertCriteria{
-			Tags:   query.Tag,
 			Author: query.Author,
 			Offset: uint(offset),
 			Limit:  uint(limit),
@@ -163,7 +156,7 @@ func (h *Handler) deleteAlert(c *gin.Context) {
 			return handler.NewErrorResponse(http.StatusBadRequest, handler.InvalidUriValue, "invalid alert request in uri", details)
 		}
 
-		// delete alert and comments with in transaction
+		// delete alert in transaction
 		currentUser := account.MustCurrentUser(c)
 		err := h.alertDB.RunInTx(c.Request.Context(), func(ctx context.Context) error {
 			// delete a alert
@@ -171,12 +164,7 @@ func (h *Handler) deleteAlert(c *gin.Context) {
 				return err
 			}
 
-			// delete alert comments
-			deleted, err := h.alertDB.DeleteComments(ctx, currentUser.ID, uri.Slug)
-			if err != nil {
-				return err
-			}
-			logger.Debugw("alert.handler.deleteAlert success to delete a alert", "comments", deleted)
+			logger.Debugw("alert.handler.deleteAlert success to delete a alert", "comments")
 			return nil
 		})
 		if err != nil {
@@ -201,7 +189,6 @@ func RouteV1(cfg *config.Config, h *Handler, r *gin.Engine, auth *jwt.GinJWTMidd
 	{
 		alertV1.GET(":slug", h.alertBySlug)
 		alertV1.GET("", h.alerts)
-		alertV1.GET(":slug/comments", h.alertComments)
 	}
 
 	// auth required
@@ -209,8 +196,6 @@ func RouteV1(cfg *config.Config, h *Handler, r *gin.Engine, auth *jwt.GinJWTMidd
 	{
 		alertV1.POST("", h.saveAlert)
 		alertV1.DELETE(":slug", h.deleteAlert)
-		alertV1.POST(":slug/comments", h.saveComment)
-		alertV1.DELETE(":slug/comments/:id", h.deleteComment)
 	}
 }
 

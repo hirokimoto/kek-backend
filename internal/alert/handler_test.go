@@ -14,7 +14,6 @@ import (
 	"kek-backend/pkg/logging"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
 
@@ -45,23 +44,7 @@ var (
 		UpdatedAt: time.Now(),
 		Author:    dUser,
 		AuthorID:  dUser.ID,
-		Tags: []*model.Tag{
-			{
-				ID:        3,
-				Name:      "reactjs",
-				CreatedAt: time.Now(),
-			}, {
-				ID:        2,
-				Name:      "angularjs",
-				CreatedAt: time.Now(),
-			}, {
-				ID:        1,
-				Name:      "dragons",
-				CreatedAt: time.Now(),
-			},
-		},
 	}
-	dAlertTags = []string{"reactjs", "angularjs", "dragons"}
 )
 
 type HandlerSuite struct {
@@ -112,9 +95,8 @@ func (s *HandlerSuite) TestSaveAlert() {
 	// when
 	requestBody := map[string]interface{}{
 		"alert": map[string]interface{}{
-			"title":   dAlert.Title,
-			"body":    dAlert.Body,
-			"tagList": dAlertTags,
+			"title": dAlert.Title,
+			"body":  dAlert.Body,
 		},
 	}
 	b, _ := json.Marshal(&requestBody)
@@ -126,7 +108,7 @@ func (s *HandlerSuite) TestSaveAlert() {
 
 	// then
 	// 1) method called
-	alertMatcher := alertMatcher(dAlert.Title, dAlert.Body, dAlertTags, &dUser)
+	alertMatcher := alertMatcher(dAlert.Title, dAlert.Body, &dUser)
 	s.db.AssertCalled(s.T(), "SaveAlert", mock.Anything, mock.MatchedBy(alertMatcher))
 	// 2) status code
 	s.Equal(http.StatusCreated, res.Code)
@@ -157,7 +139,6 @@ func (s *HandlerSuite) TestAlertBySlug() {
 
 func (s *HandlerSuite) TestAlerts() {
 	criteria := database.IterateAlertCriteria{
-		Tags:   []string{dAlertTags[0]},
 		Author: dAlert.Author.Username,
 		Offset: 0,
 		Limit:  5,
@@ -165,7 +146,7 @@ func (s *HandlerSuite) TestAlerts() {
 	s.db.On("FindAlerts", mock.Anything, criteria).Return([]*model.Alert{&dAlert}, int64(1), nil)
 
 	// when
-	url := fmt.Sprintf("/v1/api/alerts?tag=%s&author=%s&offset=%d&limit=%d", criteria.Tags[0],
+	url := fmt.Sprintf("/v1/api/alerts?tag=%s&author=%s&offset=%d&limit=%d",
 		criteria.Author, criteria.Offset, criteria.Limit)
 
 	res := httptest.NewRecorder()
@@ -213,13 +194,6 @@ func (s *HandlerSuite) assertAlertResponse(alert *model.Alert, result gjson.Resu
 	s.Equal(alert.Title, result.Get("title").String())
 	s.Equal(alert.Body, result.Get("body").String())
 
-	var tagVals []string
-	for _, tag := range alert.Tags {
-		tagVals = append(tagVals, tag.Name)
-	}
-	for _, result := range result.Get("tagList").Array() {
-		s.Contains(tagVals, result.String())
-	}
 	s.True(result.Get("createdAt").Exists())
 	s.True(result.Get("updatedAt").Exists())
 	s.Equal(alert.Author.Username, result.Get("author.username").String())
@@ -243,19 +217,10 @@ func (s *HandlerSuite) getBearerToken() string {
 	return gjson.Get(res.Body.String(), "token").String()
 }
 
-func alertMatcher(title, body string, tags []string, author *accountModel.Account) func(a *model.Alert) bool {
+func alertMatcher(title, body string, author *accountModel.Account) func(a *model.Alert) bool {
 	return func(a *model.Alert) bool {
 		if a.Slug != slug.Make(title) || a.Title != title || a.Body != body {
 			return false
-		}
-		if len(tags) != len(a.Tags) {
-			return false
-		}
-		tagVals := strings.Join(tags, " ")
-		for _, tag := range a.Tags {
-			if !strings.Contains(tagVals, tag.Name) {
-				return false
-			}
 		}
 		if a.Author.Username != author.Username || a.Author.Bio != author.Bio || a.Author.Image != author.Image {
 			return false

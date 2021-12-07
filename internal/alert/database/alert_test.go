@@ -41,8 +41,6 @@ func (s *DBSuite) SetupSuite() {
 func (s *DBSuite) SetupTest() {
 	s.NoError(database.DeleteRecordAll(s.T(), s.originDB, []string{
 		"comments", "id > 0",
-		"alert_tags", "alert_id > 0",
-		"tags", "id > 0",
 		"alerts", "id > 0",
 		"accounts", "id > 0",
 	}))
@@ -51,8 +49,7 @@ func (s *DBSuite) SetupTest() {
 
 func (s *DBSuite) TestSaveAlert() {
 	// given
-	s.NoError(s.originDB.Create(&model.Tag{Name: "tag1"}).Error)
-	alert := newAlert("title1", "title1", "body", dUser, []string{"tag1", "tag2"})
+	alert := newAlert("title1", "title1", "body", dUser)
 
 	// when
 	now := time.Now()
@@ -70,16 +67,15 @@ func (s *DBSuite) TestSaveAlert() {
 	s.WithinDuration(now, find.UpdatedAt, time.Second)
 	s.Equal(int64(0), find.DeletedAtUnix)
 	s.Equal(alert.Author, dUser)
-	s.assertAlertTag(find, []string{"tag1", "tag2"})
 }
 
 func (s *DBSuite) TestSaveAlert_WithSameSlugAfterDeleted() {
 	// given
-	alert := newAlert("title1", "title1", "body", dUser, []string{"tag1", "tag2"})
+	alert := newAlert("title1", "title1", "body", dUser)
 	s.NoError(s.db.SaveAlert(nil, alert))
 	s.NoError(s.db.DeleteAlertBySlug(nil, dUser.ID, alert.Slug))
 
-	alert2 := newAlert(alert.Slug, alert.Title, alert.Body, dUser, []string{})
+	alert2 := newAlert(alert.Slug, alert.Title, alert.Body, dUser)
 
 	// when
 	err := s.db.SaveAlert(nil, alert2)
@@ -90,11 +86,11 @@ func (s *DBSuite) TestSaveAlert_WithSameSlugAfterDeleted() {
 
 func (s *DBSuite) TestSaveAlert_FailIfDuplicateSlug() {
 	// given
-	alert := newAlert("title1", "title1", "body", dUser, []string{"tag1"})
+	alert := newAlert("title1", "title1", "body", dUser)
 	s.NoError(s.db.SaveAlert(nil, alert))
 
 	// when
-	alert2 := newAlert(alert.Slug, alert.Title, alert.Body, dUser, nil)
+	alert2 := newAlert(alert.Slug, alert.Title, alert.Body, dUser)
 	err := s.db.SaveAlert(nil, alert2)
 
 	// then
@@ -104,7 +100,7 @@ func (s *DBSuite) TestSaveAlert_FailIfDuplicateSlug() {
 
 func (s *DBSuite) TestFindAlertBySlug() {
 	// given
-	alert := newAlert("title1", "title1", "body", dUser, []string{"tag1"})
+	alert := newAlert("title1", "title1", "body", dUser)
 	//now := time.Now()
 	s.NoError(s.db.SaveAlert(nil, alert))
 
@@ -128,7 +124,7 @@ func (s *DBSuite) TestFindAlertBySlug_FailIfNotExist() {
 
 func (s *DBSuite) TestFindAlertBySlug_FailIfDeleted() {
 	// given
-	alert := newAlert("title1", "title1", "body", dUser, []string{"tag1"})
+	alert := newAlert("title1", "title1", "body", dUser)
 	s.NoError(s.db.SaveAlert(nil, alert))
 	_, err := s.db.FindAlertBySlug(nil, alert.Slug)
 	s.NoError(err)
@@ -156,27 +152,26 @@ func (s *DBSuite) TestFindAlerts() {
 	// alert7 - tag1
 	user1 := accountModel.Account{Username: "test-user1", Email: "test-user1@gmail.com", Password: "password"}
 	s.NoError(s.accountDB.Save(nil, &user1))
-	alert1 := newAlert("alert1", "alert1", "body1", user1, []string{"tag1", "tag2"})
+	alert1 := newAlert("alert1", "alert1", "body1", user1)
 	s.NoError(s.db.SaveAlert(nil, alert1))
-	alert2 := newAlert("alert2", "alert2", "body2", user1, []string{"tag1"})
+	alert2 := newAlert("alert2", "alert2", "body2", user1)
 	s.NoError(s.db.SaveAlert(nil, alert2))
-	alert3 := newAlert("alert3", "alert3", "body3", user1, []string{"tag4"})
+	alert3 := newAlert("alert3", "alert3", "body3", user1)
 	s.NoError(s.db.SaveAlert(nil, alert3))
-	alert4 := newAlert("alert4", "alert4", "body4", user1, []string{"tag3"})
+	alert4 := newAlert("alert4", "alert4", "body4", user1)
 	s.NoError(s.db.SaveAlert(nil, alert4))
-	alert5 := newAlert("alert5", "alert5", "body5", user1, []string{"tag1"})
+	alert5 := newAlert("alert5", "alert5", "body5", user1)
 	s.NoError(s.db.SaveAlert(nil, alert5))
-	alert6 := newAlert("alert6", "alert6", "body6", user1, []string{"tag1"})
+	alert6 := newAlert("alert6", "alert6", "body6", user1)
 	s.NoError(s.db.SaveAlert(nil, alert6))
 	s.NoError(s.db.DeleteAlertBySlug(nil, user1.ID, alert6.Slug))
 
 	user2 := accountModel.Account{Username: "test-user2", Email: "test-user2@gmail.com", Password: "password"}
 	s.NoError(s.accountDB.Save(nil, &user2))
-	alert7 := newAlert("alert7", "alert7", "body7", user2, []string{"tag1"})
+	alert7 := newAlert("alert7", "alert7", "body7", user2)
 	s.NoError(s.db.SaveAlert(nil, alert7))
 
 	criteria := IterateAlertCriteria{
-		Tags:   []string{"tag1", "tag2"},
 		Author: user1.Username,
 		Offset: 0,
 		Limit:  2,
@@ -205,7 +200,7 @@ func (s *DBSuite) TestFindAlerts() {
 
 func (s *DBSuite) TestDeleteAlertBySlug() {
 	// given
-	alert := newAlert("title1", "title1", "body", dUser, []string{"tag1"})
+	alert := newAlert("title1", "title1", "body", dUser)
 	s.NoError(s.db.SaveAlert(nil, alert))
 
 	// when
@@ -220,9 +215,9 @@ func (s *DBSuite) TestDeleteAlertBySlug() {
 
 func (s *DBSuite) TestDeleteAlertBySlug_FailIfNotExist() {
 	// given
-	alert := newAlert("title1", "title1", "body", dUser, []string{"tag1"})
+	alert := newAlert("title1", "title1", "body", dUser)
 	s.NoError(s.db.SaveAlert(nil, alert))
-	alert2 := newAlert("title2", "title2", "body", dUser, []string{"tag1"})
+	alert2 := newAlert("title2", "title2", "body", dUser)
 	s.NoError(s.db.SaveAlert(nil, alert2))
 	s.NoError(s.db.DeleteAlertBySlug(nil, alert2.Author.ID, alert2.Slug))
 
@@ -262,38 +257,13 @@ func (s *DBSuite) assertAlert(expected, actual *model.Alert) {
 	s.Equal(expected.Author.ID, actual.Author.ID)
 	s.Equal(expected.Author.Email, actual.Author.Email)
 	s.Equal(expected.Author.Username, actual.Author.Username)
-	var tags []string
-	for _, tag := range expected.Tags {
-		tags = append(tags, tag.Name)
-	}
-	s.assertAlertTag(actual, tags)
 }
 
-func (s *DBSuite) assertAlertTag(alert *model.Alert, tags []string) {
-	s.Equal(len(alert.Tags), len(tags))
-	if len(alert.Tags) == 0 {
-		return
-	}
-	m := make(map[string]struct{})
-	for _, tag := range alert.Tags {
-		m[tag.Name] = struct{}{}
-	}
-	for _, tag := range tags {
-		_, ok := m[tag]
-		s.True(ok)
-	}
-}
-
-func newAlert(slug, title, body string, author accountModel.Account, tags []string) *model.Alert {
-	var tagArr []*model.Tag
-	for _, tag := range tags {
-		tagArr = append(tagArr, &model.Tag{Name: tag})
-	}
+func newAlert(slug, title, body string, author accountModel.Account) *model.Alert {
 	return &model.Alert{
 		Slug:   slug,
 		Title:  title,
 		Body:   body,
 		Author: author,
-		Tags:   tagArr,
 	}
 }

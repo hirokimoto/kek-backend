@@ -13,7 +13,6 @@ import (
 )
 
 type IterateAlertCriteria struct {
-	Tags   []string
 	Author string
 	Offset uint
 	Limit  uint
@@ -23,8 +22,7 @@ type IterateAlertCriteria struct {
 type AlertDB interface {
 	RunInTx(ctx context.Context, f func(ctx context.Context) error) error
 
-	// SaveAlert saves a given alert with tags.
-	// if not exist tags, then save a new tag
+	// SaveAlert saves a given alert.
 	SaveAlert(ctx context.Context, alert *model.Alert) error
 
 	// FindAlertBySlug returns a alert with given slug
@@ -37,20 +35,6 @@ type AlertDB interface {
 	// DeleteAlertBySlug deletes a alert with given slug
 	// and returns nil if success to delete, otherwise returns an error
 	DeleteAlertBySlug(ctx context.Context, authorId uint, slug string) error
-
-	// SaveComment saves a comment with given alert slug and comment
-	SaveComment(ctx context.Context, slug string, comment *model.Comment) error
-
-	// FindComments returns all comments with given alert slug
-	FindComments(ctx context.Context, slug string) ([]*model.Comment, error)
-
-	// DeleteCommentById deletes a comment with given alert slug and comment id
-	// database.ErrNotFound error is returned if not exist
-	DeleteCommentById(ctx context.Context, authorId uint, slug string, id uint) error
-
-	// DeleteComments deletes all comment with given author id and slug
-	// and returns deleted records count
-	DeleteComments(ctx context.Context, authorId uint, slug string) (int64, error)
 }
 
 type alertDB struct {
@@ -81,14 +65,6 @@ func (a *alertDB) SaveAlert(ctx context.Context, alert *model.Alert) error {
 	db := database.FromContext(ctx, a.db)
 	logger.Debugw("alert.db.SaveAlert", "alert", alert)
 
-	// TODO : transaction
-	for _, tag := range alert.Tags {
-		if err := db.WithContext(ctx).FirstOrCreate(&tag, "name = ?", tag.Name).Error; err != nil {
-			logger.Errorw("alert.db.SaveAlert failed to first or save tag", "err", err)
-			return err
-		}
-	}
-
 	if err := db.WithContext(ctx).Create(alert).Error; err != nil {
 		logger.Errorw("alert.db.SaveAlert failed to save alert", "err", err)
 		if database.IsKeyConflictErr(err) {
@@ -111,11 +87,6 @@ func (a *alertDB) FindAlertBySlug(ctx context.Context, slug string) (*model.Aler
 	// WHERE slug = "title1" AND deleted_at_unix = 0 ORDER BY `alerts`.`id` LIMIT 1
 	err := db.WithContext(ctx).Joins("Author").
 		First(&ret, "slug = ? AND deleted_at_unix = 0", slug).Error
-	// 2) load tags
-	if err == nil {
-		// SELECT * from tags JOIN alert_tags ON alert_tags.tag_id = tags.id AND alert_tags.alert_id = ?
-		err = db.WithContext(ctx).Model(&ret).Association("Tags").Find(&ret.Tags)
-	}
 
 	if err != nil {
 		logger.Errorw("failed to find alert", "err", err)
@@ -133,15 +104,8 @@ func (a *alertDB) FindAlerts(ctx context.Context, criteria IterateAlertCriteria)
 	logger.Debugw("alert.db.FindAlerts", "criteria", criteria)
 
 	chain := db.WithContext(ctx).Table("alerts a").Where("deleted_at_unix = 0")
-	if len(criteria.Tags) != 0 {
-		chain = chain.Where("t.name IN ?", criteria.Tags)
-	}
 	if criteria.Author != "" {
 		chain = chain.Where("au.username = ?", criteria.Author)
-	}
-	if len(criteria.Tags) != 0 {
-		chain = chain.Joins("LEFT JOIN alert_tags ats on ats.alert_id = a.id").
-			Joins("LEFT JOIN tags t on t.id = ats.tag_id")
 	}
 	if criteria.Author != "" {
 		chain = chain.Joins("LEFT JOIN accounts au on au.id = a.author_id")
@@ -189,38 +153,6 @@ func (a *alertDB) FindAlerts(ctx context.Context, criteria IterateAlertCriteria)
 		return nil, 0, err
 	}
 
-	// get tags by alert ids
-	ma := make(map[uint]*model.Alert)
-	for _, r := range ret {
-		ma[r.ID] = r
-	}
-	type AlertTag struct {
-		model.Tag
-		AlertId uint
-	}
-	batchSize := 100 // TODO : config
-	for i := 0; i < len(ret); i += batchSize {
-		var at []*AlertTag
-		last := i + batchSize
-		if last > len(ret) {
-			last = len(ret)
-		}
-
-		err = db.WithContext(ctx).Table("tags").
-			Where("alert_tags.alert_id IN (?)", ids[i:last]).
-			Joins("LEFT JOIN alert_tags ON alert_tags.tag_id = tags.id").
-			Select("tags.*, alert_tags.alert_id alert_id").
-			Find(&at).Error
-
-		if err != nil {
-			logger.Error("failed to load tags by alert ids", "alertIds", ids[i:last], "err", err)
-			return nil, 0, err
-		}
-		for _, tag := range at {
-			a := ma[tag.AlertId]
-			a.Tags = append(a.Tags, &tag.Tag)
-		}
-	}
 	return ret, totalCount, nil
 }
 
@@ -241,14 +173,6 @@ func (a *alertDB) DeleteAlertBySlug(ctx context.Context, authorId uint, slug str
 	if chain.RowsAffected == 0 {
 		logger.Error("failed to delete an alert because not found")
 		return database.ErrNotFound
-	}
-	// delete alert tag relation
-	query := `DELETE ats FROM alert_tags ats
-		LEFT JOIN alerts a on a.id = ats.alert_id
-		WHERE a.slug = ?;`
-	if err := db.WithContext(ctx).Exec(query, slug).Error; err != nil {
-		logger.Errorw("failed to delete relation of alerts and tags", "err", err)
-		return err
 	}
 	return nil
 }

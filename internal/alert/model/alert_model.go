@@ -6,32 +6,19 @@ import (
 )
 
 type Alert struct {
-	ID            uint      `gorm:"column:id"`
-	Slug          string    `gorm:"column:slug"`
-	Title         string    `gorm:"column:title"`
-	Body          string    `gorm:"column:body"`
-	CreatedAt     time.Time `gorm:"column:created_at"`
-	UpdatedAt     time.Time `gorm:"column:updated_at"`
-	DeletedAtUnix int64     `gorm:"column:deleted_at_unix"`
-	Author        accountModel.Account
-	AuthorID      uint
-	Tags          []*Tag `gorm:"many2many:alert_tags;association_autocreate:false"`
-}
-
-type Tag struct {
-	ID        uint      `gorm:"column:id"`
-	Name      string    `gorm:"column:name"`
-	CreatedAt time.Time `gorm:"column:created_at"`
-	Alerts    []Alert   `gorm:"many2many:alert_tags;"`
-}
-
-type Comment struct {
-	ID        uint   `gorm:"column:id"`
-	Body      string `gorm:"column:body"`
-	Slug      string `gorm:"column:slug"`
-	Author    accountModel.Account
-	AuthorID  uint
-	CreatedAt time.Time  `gorm:"column:created_at"`
-	UpdatedAt time.Time  `gorm:"column:updated_at"`
-	DeletedAt *time.Time `gorm:"column:deleted_at"`
+	ID             uint      `gorm:"column:id"`
+	Slug           string    `gorm:"column:slug"`
+	Title          string    `gorm:"column:title"`
+	Body           string    `gorm:"column:body"`
+	PairAddress    string    `gorm:"column:pair_address"`
+	AlertType      string    `gorm:"column:alert_type"`
+	AlertValue     float64   `gorm:"column:alert_value"`
+	AlertOption    string    `gorm:"column:alert_option"`
+	ExpirationTime time.Time `gorm:"column:expiration_time"`
+	AlertActions   []string  `gorm:"column:alert_actions"`
+	CreatedAt      time.Time `gorm:"column:created_at"`
+	UpdatedAt      time.Time `gorm:"column:updated_at"`
+	DeletedAtUnix  int64     `gorm:"column:deleted_at_unix"`
+	Author         accountModel.Account
+	AuthorID       uint
 }

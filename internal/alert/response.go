@@ -18,7 +18,6 @@ type Alert struct {
 	Slug      string    `json:"slug"`
 	Title     string    `json:"title"`
 	Body      string    `json:"body"`
-	Tags      []string  `json:"tagList"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	Author    Author    `json:"author"`
@@ -61,51 +60,17 @@ func NewAlertsResponse(alerts []*model.Alert, total int64) *AlertsResponse {
 
 // NewAlertResponse converts alert model to AlertResponse
 func NewAlertResponse(a *model.Alert) *AlertResponse {
-	var tags []string
-	for _, tag := range a.Tags {
-		tags = append(tags, tag.Name)
-	}
-
 	return &AlertResponse{
 		Alert: Alert{
 			Slug:      a.Slug,
 			Title:     a.Title,
 			Body:      a.Body,
-			Tags:      tags,
 			CreatedAt: a.CreatedAt,
 			UpdatedAt: a.UpdatedAt,
 			Author: Author{
 				Username: a.Author.Username,
 				Bio:      a.Author.Bio,
 				Image:    a.Author.Image,
-			},
-		},
-	}
-}
-
-// NewCommentsResponse converts alert comment models to CommentsResponse
-func NewCommentsResponse(comments []*model.Comment) *CommentsResponse {
-	var commentsRes []Comment
-	for _, comment := range comments {
-		commentsRes = append(commentsRes, NewCommentResponse(comment).Comment)
-	}
-	return &CommentsResponse{
-		Comments: commentsRes,
-	}
-}
-
-// NewCommentResponse converts alert comment model to CommentResponse
-func NewCommentResponse(comment *model.Comment) *CommentResponse {
-	return &CommentResponse{
-		Comment: Comment{
-			ID:        comment.ID,
-			CreatedAt: comment.CreatedAt,
-			UpdatedAt: comment.UpdatedAt,
-			Body:      comment.Body,
-			Author: Author{
-				Username: comment.Author.Username,
-				Bio:      comment.Author.Bio,
-				Image:    comment.Author.Image,
 			},
 		},
 	}
