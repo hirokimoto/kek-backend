@@ -9,7 +9,7 @@ var defaultConfig = map[string]interface{}{
 	"jwt.secret":      "secret-key",
 	"jwt.sessionTime": 864000,
 
-	"db.dataSourceName":   "postgres://common:@localhost:5432/nft?sslmode=disable",
+	"db.dataSourceName":   "postgres://common:@localhost:5432/kek?sslmode=disable",
 	"db.migrate.enable":   false,
 	"db.migrate.dir":      "/migrations",
 	"db.pool.maxOpen":     50,

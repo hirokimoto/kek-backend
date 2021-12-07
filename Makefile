@@ -11,10 +11,10 @@ start: # start a server
 	./kek-server server
 
 migrate: # migrate database
-	migrate -path ./migrations -database "postgres://common:@localhost:5432/nft?sslmode=disable" up
+	migrate -path ./migrations -database "postgres://common:@localhost:5432/kek?sslmode=disable" up
 
 force: # migrate force
-	migrate -path ./migrations -database "postgres://common:@localhost:5432/nft?sslmode=disable" force 0
+	migrate -path ./migrations -database "postgres://common:@localhost:5432/kek?sslmode=disable" force 0
 
 test:
 	go clean -testcache
