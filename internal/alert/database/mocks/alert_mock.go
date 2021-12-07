@@ -16,13 +16,13 @@ type AlertDB struct {
 	mock.Mock
 }
 
-// DeleteAlertBySlug provides a mock function with given fields: ctx, authorId, slug
-func (_m *AlertDB) DeleteAlertBySlug(ctx context.Context, authorId uint, slug string) error {
-	ret := _m.Called(ctx, authorId, slug)
+// DeleteAlertBySlug provides a mock function with given fields: ctx, accountId, slug
+func (_m *AlertDB) DeleteAlertBySlug(ctx context.Context, accountId uint, slug string) error {
+	ret := _m.Called(ctx, accountId, slug)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, uint, string) error); ok {
-		r0 = rf(ctx, authorId, slug)
+		r0 = rf(ctx, accountId, slug)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -30,13 +30,13 @@ func (_m *AlertDB) DeleteAlertBySlug(ctx context.Context, authorId uint, slug st
 	return r0
 }
 
-// DeleteCommentById provides a mock function with given fields: ctx, authorId, slug, id
-func (_m *AlertDB) DeleteCommentById(ctx context.Context, authorId uint, slug string, id uint) error {
-	ret := _m.Called(ctx, authorId, slug, id)
+// DeleteCommentById provides a mock function with given fields: ctx, accountId, slug, id
+func (_m *AlertDB) DeleteCommentById(ctx context.Context, accountId uint, slug string, id uint) error {
+	ret := _m.Called(ctx, accountId, slug, id)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, uint, string, uint) error); ok {
-		r0 = rf(ctx, authorId, slug, id)
+		r0 = rf(ctx, accountId, slug, id)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -44,20 +44,20 @@ func (_m *AlertDB) DeleteCommentById(ctx context.Context, authorId uint, slug st
 	return r0
 }
 
-// DeleteComments provides a mock function with given fields: ctx, authorId, slug
-func (_m *AlertDB) DeleteComments(ctx context.Context, authorId uint, slug string) (int64, error) {
-	ret := _m.Called(ctx, authorId, slug)
+// DeleteComments provides a mock function with given fields: ctx, accountId, slug
+func (_m *AlertDB) DeleteComments(ctx context.Context, accountId uint, slug string) (int64, error) {
+	ret := _m.Called(ctx, accountId, slug)
 
 	var r0 int64
 	if rf, ok := ret.Get(0).(func(context.Context, uint, string) int64); ok {
-		r0 = rf(ctx, authorId, slug)
+		r0 = rf(ctx, accountId, slug)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, uint, string) error); ok {
-		r1 = rf(ctx, authorId, slug)
+		r1 = rf(ctx, accountId, slug)
 	} else {
 		r1 = ret.Error(1)
 	}

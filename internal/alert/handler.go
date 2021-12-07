@@ -65,8 +65,8 @@ func (h *Handler) saveAlert(c *gin.Context) {
 			AlertOption:    body.Alert.AlertOption,
 			ExpirationTime: body.Alert.ExpirationTime,
 			AlertActions:   body.Alert.AlertActions,
-			Author:         *currentUser,
-			AuthorID:       currentUser.ID,
+			Account:        *currentUser,
+			AccountID:      currentUser.ID,
 		}
 		err := h.alertDB.SaveAlert(c.Request.Context(), &alert)
 		if err != nil {
@@ -114,10 +114,10 @@ func (h *Handler) alerts(c *gin.Context) {
 	handler.HandleRequest(c, func(c *gin.Context) *handler.Response {
 		logger := logging.FromContext(c)
 		type QueryParameter struct {
-			Tag    []string `form:"tag" binding:"omitempty,dive,max=10"`
-			Author string   `form:"author" binding:"omitempty"`
-			Limit  string   `form:"limit,default=5" binding:"numeric"`
-			Offset string   `form:"offset,default=0" binding:"numeric"`
+			Tag     []string `form:"tag" binding:"omitempty,dive,max=10"`
+			Account string   `form:"account" binding:"omitempty"`
+			Limit   string   `form:"limit,default=5" binding:"numeric"`
+			Offset  string   `form:"offset,default=0" binding:"numeric"`
 		}
 		var query QueryParameter
 		if err := c.ShouldBindQuery(&query); err != nil {
@@ -138,9 +138,9 @@ func (h *Handler) alerts(c *gin.Context) {
 			offset = 0
 		}
 		criteria := alertDB.IterateAlertCriteria{
-			Author: query.Author,
-			Offset: uint(offset),
-			Limit:  uint(limit),
+			Account: query.Account,
+			Offset:  uint(offset),
+			Limit:   uint(limit),
 		}
 		alerts, total, err := h.alertDB.FindAlerts(c.Request.Context(), criteria)
 		if err != nil {

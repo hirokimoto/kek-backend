@@ -42,8 +42,8 @@ var (
 		Body:      "You have to believe",
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		Author:    dUser,
-		AuthorID:  dUser.ID,
+		Account:   dUser,
+		AccountID: dUser.ID,
 	}
 )
 
@@ -139,15 +139,15 @@ func (s *HandlerSuite) TestAlertBySlug() {
 
 func (s *HandlerSuite) TestAlerts() {
 	criteria := database.IterateAlertCriteria{
-		Author: dAlert.Author.Username,
-		Offset: 0,
-		Limit:  5,
+		Account: dAlert.Account.Username,
+		Offset:  0,
+		Limit:   5,
 	}
 	s.db.On("FindAlerts", mock.Anything, criteria).Return([]*model.Alert{&dAlert}, int64(1), nil)
 
 	// when
-	url := fmt.Sprintf("/v1/api/alerts?tag=%s&author=%s&offset=%d&limit=%d",
-		criteria.Author, criteria.Offset, criteria.Limit)
+	url := fmt.Sprintf("/v1/api/alerts?tag=%s&account=%s&offset=%d&limit=%d",
+		criteria.Account, criteria.Offset, criteria.Limit)
 
 	res := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", url, nil)
@@ -196,9 +196,9 @@ func (s *HandlerSuite) assertAlertResponse(alert *model.Alert, result gjson.Resu
 
 	s.True(result.Get("createdAt").Exists())
 	s.True(result.Get("updatedAt").Exists())
-	s.Equal(alert.Author.Username, result.Get("author.username").String())
-	s.Equal(alert.Author.Bio, result.Get("author.bio").String())
-	s.Equal(alert.Author.Image, result.Get("author.image").String())
+	s.Equal(alert.Account.Username, result.Get("account.username").String())
+	s.Equal(alert.Account.Bio, result.Get("account.bio").String())
+	s.Equal(alert.Account.Image, result.Get("account.image").String())
 }
 
 func (s *HandlerSuite) getBearerToken() string {
@@ -217,12 +217,12 @@ func (s *HandlerSuite) getBearerToken() string {
 	return gjson.Get(res.Body.String(), "token").String()
 }
 
-func alertMatcher(title, body string, author *accountModel.Account) func(a *model.Alert) bool {
+func alertMatcher(title, body string, account *accountModel.Account) func(a *model.Alert) bool {
 	return func(a *model.Alert) bool {
 		if a.Slug != slug.Make(title) || a.Title != title || a.Body != body {
 			return false
 		}
-		if a.Author.Username != author.Username || a.Author.Bio != author.Bio || a.Author.Image != author.Image {
+		if a.Account.Username != account.Username || a.Account.Bio != account.Bio || a.Account.Image != account.Image {
 			return false
 		}
 		return true

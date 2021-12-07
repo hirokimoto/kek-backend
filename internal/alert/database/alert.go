@@ -13,9 +13,9 @@ import (
 )
 
 type IterateAlertCriteria struct {
-	Author string
-	Offset uint
-	Limit  uint
+	Account string
+	Offset  uint
+	Limit   uint
 }
 
 //go:generate mockery --name AlertDB --filename alert_mock.go
@@ -34,7 +34,7 @@ type AlertDB interface {
 
 	// DeleteAlertBySlug deletes a alert with given slug
 	// and returns nil if success to delete, otherwise returns an error
-	DeleteAlertBySlug(ctx context.Context, authorId uint, slug string) error
+	DeleteAlertBySlug(ctx context.Context, accountId uint, slug string) error
 }
 
 type alertDB struct {
@@ -81,11 +81,11 @@ func (a *alertDB) FindAlertBySlug(ctx context.Context, slug string) (*model.Aler
 	logger.Debugw("alert.db.FindAlertBySlug", "slug", slug)
 
 	var ret model.Alert
-	// 1) load alert with author
+	// 1) load alert with account
 	// SELECT alerts.*, accounts.*
-	// FROM `alerts` LEFT JOIN `accounts` `Author` ON `alerts`.`author_id` = `Author`.`id`
+	// FROM `alerts` LEFT JOIN `accounts` `Account` ON `alerts`.`account_id` = `Account`.`id`
 	// WHERE slug = "title1" AND deleted_at_unix = 0 ORDER BY `alerts`.`id` LIMIT 1
-	err := db.WithContext(ctx).Joins("Author").
+	err := db.WithContext(ctx).Joins("Account").
 		First(&ret, "slug = ? AND deleted_at_unix = 0", slug).Error
 
 	if err != nil {
@@ -104,11 +104,11 @@ func (a *alertDB) FindAlerts(ctx context.Context, criteria IterateAlertCriteria)
 	logger.Debugw("alert.db.FindAlerts", "criteria", criteria)
 
 	chain := db.WithContext(ctx).Table("alerts a").Where("deleted_at_unix = 0")
-	if criteria.Author != "" {
-		chain = chain.Where("au.username = ?", criteria.Author)
+	if criteria.Account != "" {
+		chain = chain.Where("au.username = ?", criteria.Account)
 	}
-	if criteria.Author != "" {
-		chain = chain.Joins("LEFT JOIN accounts au on au.id = a.author_id")
+	if criteria.Account != "" {
+		chain = chain.Joins("LEFT JOIN accounts au on au.id = a.account_id")
 	}
 
 	// get total count
@@ -139,12 +139,12 @@ func (a *alertDB) FindAlerts(ctx context.Context, criteria IterateAlertCriteria)
 		ids = append(ids, id)
 	}
 
-	// get alerts with author by ids
+	// get alerts with account by ids
 	var ret []*model.Alert
 	if len(ids) == 0 {
 		return []*model.Alert{}, totalCount, nil
 	}
-	err = db.WithContext(ctx).Joins("Author").
+	err = db.WithContext(ctx).Joins("Account").
 		Where("alerts.id IN (?)", ids).
 		Order("alerts.id DESC").
 		Find(&ret).Error
@@ -156,7 +156,7 @@ func (a *alertDB) FindAlerts(ctx context.Context, criteria IterateAlertCriteria)
 	return ret, totalCount, nil
 }
 
-func (a *alertDB) DeleteAlertBySlug(ctx context.Context, authorId uint, slug string) error {
+func (a *alertDB) DeleteAlertBySlug(ctx context.Context, accountId uint, slug string) error {
 	logger := logging.FromContext(ctx)
 	db := database.FromContext(ctx, a.db)
 	logger.Debugw("alert.db.DeleteAlertBySlug", "slug", slug)
@@ -164,7 +164,7 @@ func (a *alertDB) DeleteAlertBySlug(ctx context.Context, authorId uint, slug str
 	// delete alert
 	chain := db.WithContext(ctx).Model(&model.Alert{}).
 		Where("slug = ? AND deleted_at_unix = 0", slug).
-		Where("author_id = ?", authorId).
+		Where("account_id = ?", accountId).
 		Update("deleted_at_unix", time.Now().Unix())
 	if chain.Error != nil {
 		logger.Errorw("failed to delete an alert", "err", chain.Error)

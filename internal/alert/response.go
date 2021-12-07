@@ -20,7 +20,7 @@ type Alert struct {
 	Body      string    `json:"body"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
-	Author    Author    `json:"author"`
+	Account   Account   `json:"account"`
 }
 
 type CommentResponse struct {
@@ -36,10 +36,10 @@ type Comment struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	Body      string    `json:"body"`
-	Author    Author    `json:"author"`
+	Account   Account   `json:"account"`
 }
 
-type Author struct {
+type Account struct {
 	Username string `json:"username"`
 	Bio      string `json:"bio"`
 	Image    string `json:"image"`
@@ -67,10 +67,10 @@ func NewAlertResponse(a *model.Alert) *AlertResponse {
 			Body:      a.Body,
 			CreatedAt: a.CreatedAt,
 			UpdatedAt: a.UpdatedAt,
-			Author: Author{
-				Username: a.Author.Username,
-				Bio:      a.Author.Bio,
-				Image:    a.Author.Image,
+			Account: Account{
+				Username: a.Account.Username,
+				Bio:      a.Account.Bio,
+				Image:    a.Account.Image,
 			},
 		},
 	}

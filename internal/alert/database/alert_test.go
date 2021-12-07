@@ -66,7 +66,7 @@ func (s *DBSuite) TestSaveAlert() {
 	s.WithinDuration(now, find.CreatedAt, time.Second)
 	s.WithinDuration(now, find.UpdatedAt, time.Second)
 	s.Equal(int64(0), find.DeletedAtUnix)
-	s.Equal(alert.Author, dUser)
+	s.Equal(alert.Account, dUser)
 }
 
 func (s *DBSuite) TestSaveAlert_WithSameSlugAfterDeleted() {
@@ -172,9 +172,9 @@ func (s *DBSuite) TestFindAlerts() {
 	s.NoError(s.db.SaveAlert(nil, alert7))
 
 	criteria := IterateAlertCriteria{
-		Author: user1.Username,
-		Offset: 0,
-		Limit:  2,
+		Account: user1.Username,
+		Offset:  0,
+		Limit:   2,
 	}
 
 	// when : first iteration
@@ -219,27 +219,27 @@ func (s *DBSuite) TestDeleteAlertBySlug_FailIfNotExist() {
 	s.NoError(s.db.SaveAlert(nil, alert))
 	alert2 := newAlert("title2", "title2", "body", dUser)
 	s.NoError(s.db.SaveAlert(nil, alert2))
-	s.NoError(s.db.DeleteAlertBySlug(nil, alert2.Author.ID, alert2.Slug))
+	s.NoError(s.db.DeleteAlertBySlug(nil, alert2.Account.ID, alert2.Slug))
 
 	cases := []struct {
-		AuthorID uint
-		Slug     string
+		AccountID uint
+		Slug      string
 	}{
 		{
-			AuthorID: dUser.ID,
-			Slug:     "not-exist-slug",
+			AccountID: dUser.ID,
+			Slug:      "not-exist-slug",
 		}, {
-			AuthorID: dUser.ID + 1000,
-			Slug:     alert.Slug,
+			AccountID: dUser.ID + 1000,
+			Slug:      alert.Slug,
 		}, {
-			AuthorID: dUser.ID,
-			Slug:     alert2.Slug,
+			AccountID: dUser.ID,
+			Slug:      alert2.Slug,
 		},
 	}
 
 	for _, tc := range cases {
 		// when
-		err := s.db.DeleteAlertBySlug(nil, tc.AuthorID, tc.Slug)
+		err := s.db.DeleteAlertBySlug(nil, tc.AccountID, tc.Slug)
 
 		// then
 		s.Error(err)
@@ -254,16 +254,16 @@ func (s *DBSuite) assertAlert(expected, actual *model.Alert) {
 	s.WithinDuration(expected.CreatedAt, actual.CreatedAt, time.Second)
 	s.WithinDuration(expected.UpdatedAt, actual.UpdatedAt, time.Second)
 	s.Equal(expected.DeletedAtUnix, actual.DeletedAtUnix)
-	s.Equal(expected.Author.ID, actual.Author.ID)
-	s.Equal(expected.Author.Email, actual.Author.Email)
-	s.Equal(expected.Author.Username, actual.Author.Username)
+	s.Equal(expected.Account.ID, actual.Account.ID)
+	s.Equal(expected.Account.Email, actual.Account.Email)
+	s.Equal(expected.Account.Username, actual.Account.Username)
 }
 
-func newAlert(slug, title, body string, author accountModel.Account) *model.Alert {
+func newAlert(slug, title, body string, account accountModel.Account) *model.Alert {
 	return &model.Alert{
-		Slug:   slug,
-		Title:  title,
-		Body:   body,
-		Author: author,
+		Slug:    slug,
+		Title:   title,
+		Body:    body,
+		Account: account,
 	}
 }
