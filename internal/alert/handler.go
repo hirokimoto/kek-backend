@@ -41,6 +41,7 @@ func (h *Handler) saveAlert(c *gin.Context) {
 				AlertOption    string    `json:"alertOption" binding:"required"`
 				ExpirationTime time.Time `json:"expirationTime" binding:"required"`
 				AlertActions   string    `json:"alertActions" binding:"required"`
+				AlertStatus    string    `json:"alertStatus" binding:"required"`
 			} `json:"alert"`
 		}
 		var body RequestBody
@@ -63,10 +64,10 @@ func (h *Handler) saveAlert(c *gin.Context) {
 			AlertType:      body.Alert.AlertType,
 			AlertValue:     body.Alert.AlertValue,
 			AlertOption:    body.Alert.AlertOption,
+			AlertStatus:    body.Alert.AlertStatus,
 			ExpirationTime: body.Alert.ExpirationTime,
 			AlertActions:   body.Alert.AlertActions,
 			Account:        *currentUser,
-			AccountID:      currentUser.ID,
 		}
 		err := h.alertDB.SaveAlert(c.Request.Context(), &alert)
 		if err != nil {
