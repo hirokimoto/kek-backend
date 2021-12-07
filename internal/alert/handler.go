@@ -56,11 +56,17 @@ func (h *Handler) saveAlert(c *gin.Context) {
 		// save alert
 		currentUser := account.MustCurrentUser(c)
 		alert := model.Alert{
-			Slug:     slug.Make(body.Alert.Title),
-			Title:    body.Alert.Title,
-			Body:     body.Alert.Body,
-			Author:   *currentUser,
-			AuthorID: currentUser.ID,
+			Slug:           slug.Make(body.Alert.Title),
+			Title:          body.Alert.Title,
+			Body:           body.Alert.Body,
+			PairAddress:    body.Alert.PairAddress,
+			AlertType:      body.Alert.AlertType,
+			AlertValue:     body.Alert.AlertValue,
+			AlertOption:    body.Alert.AlertOption,
+			ExpirationTime: body.Alert.ExpirationTime,
+			AlertActions:   body.Alert.AlertActions,
+			Author:         *currentUser,
+			AuthorID:       currentUser.ID,
 		}
 		err := h.alertDB.SaveAlert(c.Request.Context(), &alert)
 		if err != nil {
