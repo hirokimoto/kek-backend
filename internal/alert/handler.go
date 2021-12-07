@@ -33,8 +33,14 @@ func (h *Handler) saveAlert(c *gin.Context) {
 		// bind
 		type RequestBody struct {
 			Alert struct {
-				Title string `json:"title" binding:"required,min=5"`
-				Body  string `json:"body" binding:"required"`
+				Title          string    `json:"title" binding:"required,min=5"`
+				Body           string    `json:"body" binding:"required"`
+				PairAddress    string    `json:"pairAddress" binding:"required,min=20"`
+				AlertType      string    `json:"alertType" binding:"required,min=3"`
+				AlertValue     float64   `json:"alertValue" binding:"required"`
+				AlertOption    string    `json:"alertOption" binding:"required"`
+				ExpirationTime time.Time `json:"expirationTime" binding:"required"`
+				AlertActions   []string  `json:"alertActions" binding:"required"`
 			} `json:"alert"`
 		}
 		var body RequestBody
