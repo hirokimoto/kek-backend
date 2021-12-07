@@ -15,7 +15,7 @@ type Alert struct {
 	AlertValue     string    `gorm:"column:alert_value"`
 	AlertOption    string    `gorm:"column:alert_option"`
 	ExpirationTime time.Time `gorm:"column:expiration_time"`
-	AlertActions   []string  `gorm:"column:alert_actions"`
+	AlertActions   string    `gorm:"column:alert_actions"`
 	CreatedAt      time.Time `gorm:"column:created_at"`
 	UpdatedAt      time.Time `gorm:"column:updated_at"`
 	DeletedAtUnix  int64     `gorm:"column:deleted_at_unix"`

@@ -40,7 +40,7 @@ func (h *Handler) saveAlert(c *gin.Context) {
 				AlertValue     string    `json:"alertValue" binding:"required"`
 				AlertOption    string    `json:"alertOption" binding:"required"`
 				ExpirationTime time.Time `json:"expirationTime" binding:"required"`
-				AlertActions   []string  `json:"alertActions" binding:"required"`
+				AlertActions   string    `json:"alertActions" binding:"required"`
 			} `json:"alert"`
 		}
 		var body RequestBody
