@@ -194,7 +194,7 @@ func (h *Handler) deleteAlert(c *gin.Context) {
 	})
 }
 
-func AlertCron() {
+func StartCron() {
 	c := cron.New(cron.WithSeconds())
 	c.AddFunc("@every 5s", func() {
 		// Create the message to be sent.
@@ -248,7 +248,7 @@ func RouteV1(cfg *config.Config, h *Handler, r *gin.Engine, auth *jwt.GinJWTMidd
 }
 
 func NewHandler(alertDB alertDB.AlertDB) *Handler {
-	AlertCron()
+	StartCron()
 	return &Handler{
 		alertDB: alertDB,
 	}
