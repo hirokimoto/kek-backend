@@ -2,7 +2,6 @@ package alert
 
 import (
 	"context"
-	"fmt"
 	"kek-backend/internal/account"
 	alertDB "kek-backend/internal/alert/database"
 	"kek-backend/internal/alert/model"
@@ -12,11 +11,13 @@ import (
 	"kek-backend/internal/middleware/handler"
 	"kek-backend/pkg/logging"
 	"kek-backend/pkg/validate"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
+	"github.com/appleboy/go-fcm"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/gosimple/slug"
@@ -193,6 +194,38 @@ func (h *Handler) deleteAlert(c *gin.Context) {
 	})
 }
 
+func AlertCron() {
+	c := cron.New(cron.WithSeconds())
+	c.AddFunc("@every 5s", func() {
+		// Create the message to be sent.
+		msg := &fcm.Message{
+			To: "eqGLNjY2A6XP3aEN254CRv:APA91bEqWb7K4lj9snQ9RArYx__KELSqKhIlmKlBTho2u1rFXN2QbJ1vJLXHtEYjVVcqz-DREV8fGMEb6wGhD_HXulURUmoe7CG7Ktk1btaMnFeGx1_5SCRMEIovekmR5PVoP5T-fDBY",
+			Data: map[string]interface{}{
+				"foo": "bar",
+			},
+			Notification: &fcm.Notification{
+				Title: "Hiroki's Go is awesome",
+				Body:  "Hiroki sends a push notification via go backend!",
+			},
+		}
+
+		// Create a FCM client to send the message.
+		client, err := fcm.NewClient("AAAAlSnRveU:APA91bF_XWeThMJnZuUGUyQ5wIBBBRyqGfryJ818ItRFUcJg0HubP6ekcNw0FF-ebQMHFZwva2wfEBIViv9qTh7QTeafiyHk8BWPgdE-j3DQEe2orVHpyayxF7DOyOujlarj2_SEhIr_")
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		// Send the message and receive the response without retries.
+		response, err := client.Send(msg)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		log.Printf("%#v\n", response)
+	})
+	c.Start()
+}
+
 func RouteV1(cfg *config.Config, h *Handler, r *gin.Engine, auth *jwt.GinJWTMiddleware) {
 	v1 := r.Group("v1/api")
 	timeout := time.Duration(cfg.ServerConfig.WriteTimeoutSecs) * time.Second
@@ -215,10 +248,7 @@ func RouteV1(cfg *config.Config, h *Handler, r *gin.Engine, auth *jwt.GinJWTMidd
 }
 
 func NewHandler(alertDB alertDB.AlertDB) *Handler {
-	c := cron.New(cron.WithSeconds())
-	c.AddFunc("@every 1s", func() { fmt.Println("Every second") })
-	c.Start()
-
+	AlertCron()
 	return &Handler{
 		alertDB: alertDB,
 	}
