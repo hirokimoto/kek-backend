@@ -2,6 +2,7 @@ package alert
 
 import (
 	"context"
+	"fmt"
 	"kek-backend/internal/account"
 	alertDB "kek-backend/internal/alert/database"
 	"kek-backend/internal/alert/model"
@@ -20,6 +21,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gosimple/slug"
 	"github.com/pkg/errors"
+	"github.com/robfig/cron/v3"
 )
 
 type Handler struct {
@@ -213,6 +215,10 @@ func RouteV1(cfg *config.Config, h *Handler, r *gin.Engine, auth *jwt.GinJWTMidd
 }
 
 func NewHandler(alertDB alertDB.AlertDB) *Handler {
+	c := cron.New(cron.WithSeconds())
+	c.AddFunc("@every 1s", func() { fmt.Println("Every second") })
+	c.Start()
+
 	return &Handler{
 		alertDB: alertDB,
 	}
