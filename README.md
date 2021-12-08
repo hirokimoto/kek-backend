@@ -41,20 +41,3 @@ e01564708984        kek-server-v2/kek-server   "kek-server --co…"   40 seconds
 > #### Check apis  
 
 Run intellij's .http files in `tools/http/sample directory`(./tools/http/sample)  
-
----  
-
-## TODO  
-
-- [x] add user, article with comment api spec
-- [x] add common error response
-- [x] configure project layer
-- [x] impl account db
-- [x] impl account handler (binding, serialize, common error middleware, etc...)
-- [x] impl article db
-- [x] impl article handler
-- [ ] refactor binding and validation of request
-- [x] configure docker compose
-- [ ] add metrics
-- [ ] configure tests (newman or http)
-- [ ] another project layer with different branch
