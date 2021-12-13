@@ -1,6 +1,7 @@
 package alert
 
 import (
+	accountModel "kek-backend/internal/account/model"
 	"kek-backend/internal/alert/model"
 	"time"
 )
@@ -27,6 +28,7 @@ type Alert struct {
 	AlertStatus    string    `json:"alertStatus"`
 	CreatedAt      time.Time `json:"createdAt"`
 	UpdatedAt      time.Time `json:"updatedAt"`
+	Account        accountModel.Account
 }
 
 // NewAlertsResponse converts alert models and total count to AlertsResponse
@@ -58,6 +60,7 @@ func NewAlertResponse(a *model.Alert) *AlertResponse {
 			AlertStatus:    a.AlertStatus,
 			CreatedAt:      a.CreatedAt,
 			UpdatedAt:      a.UpdatedAt,
+			Account:        a.Account,
 		},
 	}
 }

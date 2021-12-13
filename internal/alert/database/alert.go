@@ -105,10 +105,7 @@ func (a *alertDB) FindAlerts(ctx context.Context, criteria IterateAlertCriteria)
 
 	chain := db.WithContext(ctx).Table("alerts a").Where("deleted_at_unix = 0")
 	if criteria.Account != 0 {
-		chain = chain.Where("a.id = ?", criteria.Account)
-	}
-	if criteria.Account != 0 {
-		chain = chain.Joins("LEFT JOIN accounts au on au.id = a.account_id")
+		chain = chain.Where("au.id = ?", criteria.Account).Joins("LEFT JOIN accounts au on au.id = a.account_id")
 	}
 
 	// get total count
