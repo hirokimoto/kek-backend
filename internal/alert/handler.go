@@ -66,7 +66,7 @@ func (h *Handler) saveAlert(c *gin.Context) {
 			ExpirationTime: body.Alert.ExpirationTime,
 			AlertActions:   body.Alert.AlertActions,
 			AlertStatus:    "active",
-			Account:        currentUser.ID,
+			AccountId:      currentUser.ID,
 		}
 		err := h.alertDB.SaveAlert(c.Request.Context(), &alert)
 		if err != nil {

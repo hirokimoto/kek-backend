@@ -25,7 +25,7 @@ CREATE TABLE alerts (
 	expiration_time TIMESTAMP,
 	alert_actions VARCHAR ( 20 ) NOT NULL,
 	alert_status VARCHAR ( 10 ) NOT NULL,
-	account INTEGER NOT NULL,
+	account_id INTEGER NOT NULL,
 	created_at TIMESTAMP NOT NULL,
 	updated_at TIMESTAMP NOT NULL,
 	deleted_at_unix BIGINT

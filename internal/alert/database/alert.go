@@ -105,7 +105,7 @@ func (a *alertDB) FindAlerts(ctx context.Context, criteria IterateAlertCriteria)
 
 	chain := db.WithContext(ctx).Table("alerts a").Where("deleted_at_unix = 0")
 	if criteria.Account != 0 {
-		chain = chain.Where("au.id = ?", criteria.Account)
+		chain = chain.Where("a.id = ?", criteria.Account)
 	}
 	if criteria.Account != 0 {
 		chain = chain.Joins("LEFT JOIN accounts au on au.id = a.account_id")
@@ -119,7 +119,7 @@ func (a *alertDB) FindAlerts(ctx context.Context, criteria IterateAlertCriteria)
 	}
 
 	// get alert ids
-	rows, err := chain.Select("DISTINCT(a.id) id").
+	rows, err := chain.Select("(a.id) id").
 		Offset(int(criteria.Offset)).
 		Limit(int(criteria.Limit)).
 		Order("a.id DESC").
@@ -144,7 +144,7 @@ func (a *alertDB) FindAlerts(ctx context.Context, criteria IterateAlertCriteria)
 	if len(ids) == 0 {
 		return []*model.Alert{}, totalCount, nil
 	}
-	err = db.WithContext(ctx).Joins("Account").
+	err = db.WithContext(ctx).
 		Where("alerts.id IN (?)", ids).
 		Order("alerts.id DESC").
 		Find(&ret).Error
