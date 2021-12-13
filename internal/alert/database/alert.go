@@ -32,6 +32,9 @@ type AlertDB interface {
 	// FindAlerts returns alert list with given criteria and total count
 	FindAlerts(ctx context.Context, criteria IterateAlertCriteria) ([]*model.Alert, int64, error)
 
+	// FindAlertsWithoutContext returns alert list with given criteria and total count
+	FindAlertsWithoutContext(criteria IterateAlertCriteria) ([]*model.Alert, int64, error)
+
 	// DeleteAlertBySlug deletes a alert with given slug
 	// and returns nil if success to delete, otherwise returns an error
 	DeleteAlertBySlug(ctx context.Context, accountId uint, slug string) error
@@ -147,6 +150,55 @@ func (a *alertDB) FindAlerts(ctx context.Context, criteria IterateAlertCriteria)
 		Find(&ret).Error
 	if err != nil {
 		logger.Error("failed to find alert by ids", "err", err)
+		return nil, 0, err
+	}
+
+	return ret, totalCount, nil
+}
+
+func (a *alertDB) FindAlertsWithoutContext(criteria IterateAlertCriteria) ([]*model.Alert, int64, error) {
+	db := a.db
+
+	chain := db.Table("alerts a").Where("deleted_at_unix = 0")
+	if criteria.Account != 0 {
+		chain = chain.Where("au.id = ?", criteria.Account).Joins("LEFT JOIN accounts au on au.id = a.account_id")
+	}
+
+	// get total count
+	var totalCount int64
+	err := chain.Distinct("a.id").Count(&totalCount).Error
+	if err != nil {
+	}
+
+	// get alert ids
+	rows, err := chain.Select("(a.id) id").
+		Offset(int(criteria.Offset)).
+		Limit(int(criteria.Limit)).
+		Order("a.id DESC").
+		Rows()
+	if err != nil {
+		return nil, 0, err
+	}
+	var ids []uint
+	for rows.Next() {
+		var id uint
+		err := rows.Scan(&id)
+		if err != nil {
+			return nil, 0, err
+		}
+		ids = append(ids, id)
+	}
+
+	// get alerts with account by ids
+	var ret []*model.Alert
+	if len(ids) == 0 {
+		return []*model.Alert{}, totalCount, nil
+	}
+	err = db.Joins("Account").
+		Where("alerts.id IN (?)", ids).
+		Order("alerts.id DESC").
+		Find(&ret).Error
+	if err != nil {
 		return nil, 0, err
 	}
 

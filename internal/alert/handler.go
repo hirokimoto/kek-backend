@@ -213,7 +213,7 @@ func RouteV1(cfg *config.Config, h *Handler, r *gin.Engine, auth *jwt.GinJWTMidd
 }
 
 func NewHandler(alertDB alertDB.AlertDB) *Handler {
-	// StartCron(alertDB)
+	StartCron(alertDB)
 	return &Handler{
 		alertDB: alertDB,
 	}

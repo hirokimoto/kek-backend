@@ -14,16 +14,16 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-func sendMessage() {
+func sendMessage(title string, body string, token string) {
 	// Create the message to be sent.
 	msg := &fcm.Message{
-		To: "eqGLNjY2A6XP3aEN254CRv:APA91bEqWb7K4lj9snQ9RArYx__KELSqKhIlmKlBTho2u1rFXN2QbJ1vJLXHtEYjVVcqz-DREV8fGMEb6wGhD_HXulURUmoe7CG7Ktk1btaMnFeGx1_5SCRMEIovekmR5PVoP5T-fDBY",
+		To: token,
 		Data: map[string]interface{}{
 			"foo": "bar",
 		},
 		Notification: &fcm.Notification{
-			Title: "Hiroki's Go is awesome",
-			Body:  "Hiroki sends a push notification via go backend!",
+			Title: title,
+			Body:  body,
 		},
 	}
 
@@ -42,9 +42,19 @@ func sendMessage() {
 	log.Printf("%#v\n", response)
 }
 
-func StartCron(alertDB alertDB.AlertDB) {
+func StartCron(db alertDB.AlertDB) {
 	c := cron.New(cron.WithSeconds())
 	c.AddFunc("@every 5s", func() {
+		criteria := alertDB.IterateAlertCriteria{
+			Account: 1,
+			Offset:  0,
+			Limit:   1,
+		}
+		alerts, _, err := db.FindAlertsWithoutContext(criteria)
+		if err != nil {
+			return
+		}
+
 		var wg sync.WaitGroup
 		wg.Add(2)
 
@@ -68,20 +78,24 @@ func StartCron(alertDB alertDB.AlertDB) {
 
 		go func() {
 			<-ch
-			c2 := make(chan string, 1)
-			query2 := uniswap.QueryToken("0x2f02be0c4021022b59e9436f335d69df95e5222a")
-			uniswap.Request(query2, c2)
 
-			msg2 := <-c2
-			var tokens uniswap.Tokens
-			json.Unmarshal([]byte(msg2), &tokens)
-			tokenPrice, _ = strconv.ParseFloat(tokens.Data.Tokens[0].DerivedETH, 64)
+			for _, alert := range alerts {
+				c2 := make(chan string, 1)
+				query2 := uniswap.QueryToken(alert.PairAddress)
+				uniswap.Request(query2, c2)
+
+				msg2 := <-c2
+				var tokens uniswap.Tokens
+				json.Unmarshal([]byte(msg2), &tokens)
+				tokenPrice, _ = strconv.ParseFloat(tokens.Data.Tokens[0].DerivedETH, 64)
+				go sendMessage(alert.Title, alert.Body, alert.Account.Token)
+			}
+
 			wg.Done()
 		}()
 
 		wg.Wait()
 		fmt.Println("$$$$$:   ", ethPrice*tokenPrice)
-		// go sendMessage()
 	})
 	c.Start()
 }
