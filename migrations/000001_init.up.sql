@@ -10,6 +10,7 @@ CREATE TABLE accounts (
 	created_at TIMESTAMP NOT NULL,
 	updated_at TIMESTAMP NOT NULL,
     last_login TIMESTAMP 
+	disabled BOOLEAN NULL,
 );
 
 -- alert

@@ -1,6 +1,7 @@
 package model
 
 import (
+	accountModel "kek-backend/internal/account/model"
 	"time"
 )
 
@@ -19,5 +20,6 @@ type Alert struct {
 	CreatedAt      time.Time `gorm:"column:created_at"`
 	UpdatedAt      time.Time `gorm:"column:updated_at"`
 	DeletedAtUnix  int64     `gorm:"column:deleted_at_unix"`
-	AccountId      uint      `gorm:"many2many:accounts;"`
+	Account        accountModel.Account
+	AccountId      uint
 }

@@ -144,7 +144,7 @@ func (a *alertDB) FindAlerts(ctx context.Context, criteria IterateAlertCriteria)
 	if len(ids) == 0 {
 		return []*model.Alert{}, totalCount, nil
 	}
-	err = db.WithContext(ctx).
+	err = db.WithContext(ctx).Joins("Account").
 		Where("alerts.id IN (?)", ids).
 		Order("alerts.id DESC").
 		Find(&ret).Error
