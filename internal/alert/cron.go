@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"sync"
 
+	alertDB "kek-backend/internal/alert/database"
 	"kek-backend/internal/uniswap"
 
 	"github.com/appleboy/go-fcm"
@@ -41,7 +42,7 @@ func sendMessage() {
 	log.Printf("%#v\n", response)
 }
 
-func StartCron() {
+func StartCron(alertDB alertDB.AlertDB) {
 	c := cron.New(cron.WithSeconds())
 	c.AddFunc("@every 5s", func() {
 		var wg sync.WaitGroup
