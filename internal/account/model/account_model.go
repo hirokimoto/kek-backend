@@ -13,6 +13,7 @@ type Account struct {
 	Password  string    `gorm:"column:password"`
 	Bio       string    `gorm:"column:bio"`
 	Image     string    `gorm:"column:image"`
+	Token     string    `gorm:"column:token"`
 	CreatedAt time.Time `gorm:"column:created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at"`
 	Disabled  bool      `gorm:"column:disabled"`

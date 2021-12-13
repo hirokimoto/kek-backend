@@ -30,6 +30,7 @@ func (h *Handler) signUp(c *gin.Context) {
 				Username string `json:"username" binding:"required"`
 				Email    string `json:"email" binding:"required,email"`
 				Password string `json:"password" binding:"required,min=5"`
+				Token    string `json:"token" binding:"required,min=5"`
 			} `json:"user"`
 		}
 		var body RequestBody
@@ -51,6 +52,7 @@ func (h *Handler) signUp(c *gin.Context) {
 			Username: body.User.Username,
 			Email:    body.User.Email,
 			Password: password,
+			Token:    body.User.Token,
 		}
 		err = h.accountDB.Save(c.Request.Context(), &acc)
 		if err != nil {
@@ -92,6 +94,7 @@ func (h *Handler) update(c *gin.Context) {
 				Password string `json:"password" binding:"omitempty,min=5"`
 				Bio      string `json:"bio"`
 				Image    string `json:"image"`
+				Token    string `json:"token"`
 			} `json:"user"`
 		}
 		var body RequestBody
@@ -128,6 +131,9 @@ func (h *Handler) update(c *gin.Context) {
 		}
 		if body.User.Image != "" {
 			acc.Image = body.User.Image
+		}
+		if body.User.Token != "" {
+			acc.Token = body.User.Token
 		}
 		err = h.accountDB.Update(c.Request.Context(), currentUser.Email, acc)
 		if err != nil {

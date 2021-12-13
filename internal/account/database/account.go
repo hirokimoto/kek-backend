@@ -58,6 +58,9 @@ func (a *accountDB) Update(ctx context.Context, email string, account *model.Acc
 	if account.Image != "" {
 		fields["image"] = account.Image
 	}
+	if account.Token != "" {
+		fields["token"] = account.Token
+	}
 
 	chain := db.WithContext(ctx).
 		Model(&model.Account{}).

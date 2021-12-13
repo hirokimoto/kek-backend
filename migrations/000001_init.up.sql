@@ -6,6 +6,7 @@ CREATE TABLE accounts (
 	email VARCHAR ( 255 ) UNIQUE NOT NULL,
 	bio TEXT NULL,
 	image VARCHAR ( 255 ) NULL,
+	token VARCHAR ( 255 ) NULL,
 	created_at TIMESTAMP NOT NULL,
 	updated_at TIMESTAMP NOT NULL,
     last_login TIMESTAMP 
