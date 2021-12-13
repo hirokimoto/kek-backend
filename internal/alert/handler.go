@@ -41,7 +41,6 @@ func (h *Handler) saveAlert(c *gin.Context) {
 				AlertOption    string    `json:"alertOption" binding:"required"`
 				ExpirationTime time.Time `json:"expirationTime" binding:"required"`
 				AlertActions   string    `json:"alertActions" binding:"required"`
-				AlertStatus    string    `json:"alertStatus" binding:"required"`
 			} `json:"alert"`
 		}
 		var body RequestBody
@@ -66,7 +65,7 @@ func (h *Handler) saveAlert(c *gin.Context) {
 			AlertOption:    body.Alert.AlertOption,
 			ExpirationTime: body.Alert.ExpirationTime,
 			AlertActions:   body.Alert.AlertActions,
-			AlertStatus:    body.Alert.AlertStatus,
+			AlertStatus:    "active",
 			Account:        currentUser.ID,
 		}
 		err := h.alertDB.SaveAlert(c.Request.Context(), &alert)
@@ -213,7 +212,7 @@ func RouteV1(cfg *config.Config, h *Handler, r *gin.Engine, auth *jwt.GinJWTMidd
 }
 
 func NewHandler(alertDB alertDB.AlertDB) *Handler {
-	StartCron()
+	// StartCron()
 	return &Handler{
 		alertDB: alertDB,
 	}

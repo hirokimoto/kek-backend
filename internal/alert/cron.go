@@ -68,7 +68,7 @@ func StartCron() {
 		go func() {
 			<-ch
 			c2 := make(chan string, 1)
-			query2 := uniswap.QuertyToken("0x2f02be0c4021022b59e9436f335d69df95e5222a")
+			query2 := uniswap.QueryToken("0x2f02be0c4021022b59e9436f335d69df95e5222a")
 			uniswap.Request(query2, c2)
 
 			msg2 := <-c2

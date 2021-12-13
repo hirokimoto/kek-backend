@@ -16,7 +16,7 @@ func QueryBundles() map[string]string {
 	}
 }
 
-func QuertyToken(address string) map[string]string {
+func QueryToken(address string) map[string]string {
 	query := fmt.Sprintf(`
 		query tokens {
 			tokens(where: { id: "%s" }) {
