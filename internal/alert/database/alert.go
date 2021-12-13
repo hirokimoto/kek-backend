@@ -13,7 +13,7 @@ import (
 )
 
 type IterateAlertCriteria struct {
-	Account string
+	Account uint
 	Offset  uint
 	Limit   uint
 }
@@ -104,10 +104,10 @@ func (a *alertDB) FindAlerts(ctx context.Context, criteria IterateAlertCriteria)
 	logger.Debugw("alert.db.FindAlerts", "criteria", criteria)
 
 	chain := db.WithContext(ctx).Table("alerts a").Where("deleted_at_unix = 0")
-	if criteria.Account != "" {
-		chain = chain.Where("au.username = ?", criteria.Account)
+	if criteria.Account != 0 {
+		chain = chain.Where("au.id = ?", criteria.Account)
 	}
-	if criteria.Account != "" {
+	if criteria.Account != 0 {
 		chain = chain.Joins("LEFT JOIN accounts au on au.id = a.account_id")
 	}
 

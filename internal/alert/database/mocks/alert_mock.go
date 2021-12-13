@@ -118,29 +118,6 @@ func (_m *AlertDB) FindAlerts(ctx context.Context, criteria database.IterateAler
 	return r0, r1, r2
 }
 
-// FindComments provides a mock function with given fields: ctx, slug
-func (_m *AlertDB) FindComments(ctx context.Context, slug string) ([]*model.Comment, error) {
-	ret := _m.Called(ctx, slug)
-
-	var r0 []*model.Comment
-	if rf, ok := ret.Get(0).(func(context.Context, string) []*model.Comment); ok {
-		r0 = rf(ctx, slug)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Comment)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, slug)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // RunInTx provides a mock function with given fields: ctx, f
 func (_m *AlertDB) RunInTx(ctx context.Context, f func(context.Context) error) error {
 	ret := _m.Called(ctx, f)
@@ -162,20 +139,6 @@ func (_m *AlertDB) SaveAlert(ctx context.Context, alert *model.Alert) error {
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, *model.Alert) error); ok {
 		r0 = rf(ctx, alert)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// SaveComment provides a mock function with given fields: ctx, slug, comment
-func (_m *AlertDB) SaveComment(ctx context.Context, slug string, comment *model.Comment) error {
-	ret := _m.Called(ctx, slug, comment)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, *model.Comment) error); ok {
-		r0 = rf(ctx, slug, comment)
 	} else {
 		r0 = ret.Error(0)
 	}

@@ -42,8 +42,6 @@ var (
 		Body:      "You have to believe",
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		Account:   dUser,
-		AccountID: dUser.ID,
 	}
 )
 

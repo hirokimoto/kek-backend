@@ -129,6 +129,7 @@ func (h *Handler) alerts(c *gin.Context) {
 			return handler.NewErrorResponse(http.StatusBadRequest, handler.InvalidUriValue, "invalid alert request in query", details)
 		}
 
+		account, err := strconv.ParseUint(query.Account, 10, 64)
 		limit, err := strconv.ParseUint(query.Limit, 10, 64)
 		if err != nil {
 			limit = 5
@@ -138,7 +139,7 @@ func (h *Handler) alerts(c *gin.Context) {
 			offset = 0
 		}
 		criteria := alertDB.IterateAlertCriteria{
-			Account: query.Account,
+			Account: uint(account),
 			Offset:  uint(offset),
 			Limit:   uint(limit),
 		}
